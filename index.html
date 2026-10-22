@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Digital Watermarking Service | College Mini-Project</title>
+  <meta name="description" content="A simple, complete college mini-project demonstrating client-side digital watermarking using HTML5 Canvas API with customizable text, positioning, opacity, and PNG export.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Academic Disclaimer Banner -->
+  <aside class="academic-banner" role="alert">
+    <div class="container banner-inner">
+      <span class="badge-pill">Academic Prototype</span>
+      <p>
+        <strong>100% Client-Side Processing:</strong> All image watermarking operations run entirely within your local browser using the HTML5 Canvas API. No images are uploaded to remote cloud servers. Visual watermarks deter unauthorized use but do not legally guarantee copyright ownership.
+      </p>
+    </div>
+  </aside>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Cloud Watermark Service</h1>
+          <span class="project-tag">Digital Image Protection &bull; HTML5 Canvas API</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnLoadSample" class="btn btn-secondary btn-sm" title="Load sample test image">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          Load Sample Image
+        </button>
+
+        <button id="btnResetAll" class="btn btn-danger-outline btn-sm" title="Clear current image and reset controls">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+
+    <!-- Top Workspace: Two Columns (Controls on Left, Visual Preview on Right) -->
+    <div class="workspace-grid">
+
+      <!-- Left Column: Image Upload & Watermark Customization Controls -->
+      <aside class="controls-column">
+        
+        <!-- Step 1: Upload Image Card -->
+        <div class="card card-upload">
+          <div class="card-header">
+            <span class="step-badge">Step 1</span>
+            <h3>Upload Image</h3>
+          </div>
+
+          <div class="upload-dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload image dropzone">
+            <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg" class="visually-hidden">
+            <div class="dropzone-content">
+              <div class="dropzone-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <p class="dropzone-text"><strong>Click to browse</strong> or drag and drop</p>
+              <span class="dropzone-hint">Supports JPG, JPEG, and PNG</span>
+            </div>
+          </div>
+
+          <!-- Uploaded File Info Chip -->
+          <div id="fileInfoBox" class="file-info-box" style="display: none;">
+            <div class="file-info-details">
+              <strong id="fileName">sample.jpg</strong>
+              <span id="fileMeta" class="file-meta">1920 &times; 1080 &bull; 450 KB</span>
+            </div>
+            <button type="button" id="btnRemoveImage" class="btn-icon-clear" title="Remove current image">&times;</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Watermark Options Card -->
+        <div class="card card-options">
+          <div class="card-header">
+            <span class="step-badge">Step 2</span>
+            <h3>Watermark Settings</h3>
+          </div>
+
+          <form id="watermarkForm" onsubmit="return false;">
+            
+            <!-- Watermark Text Input -->
+            <div class="form-group">
+              <label for="watermarkText" class="form-label">Watermark Text</label>
+              <input 
+                type="text" 
+                id="watermarkText" 
+                class="form-control" 
+                value="&copy; 2026 Academic Project - Confidential" 
+                placeholder="e.g. &copy; My Project, Confidential"
+                maxlength="100"
+              >
+              
+              <!-- Quick Preset Tags -->
+              <div class="quick-presets">
+                <button type="button" class="preset-pill" data-text="&copy; 2026 Copyright Reserved">&copy; Copyright</button>
+                <button type="button" class="preset-pill" data-text="CONFIDENTIAL - DO NOT COPY">Confidential</button>
+                <button type="button" class="preset-pill" data-text="DRAFT - FOR EVALUATION ONLY">Draft</button>
+                <button type="button" class="preset-pill" data-text="STUDENT MINI-PROJECT">Mini-Project</button>
+              </div>
+            </div>
+
+            <!-- Position Selector -->
+            <div class="form-group">
+              <label for="watermarkPosition" class="form-label">Watermark Position</label>
+              <select id="watermarkPosition" class="form-control select-dropdown">
+                <option value="bottom-right" selected>Bottom-Right (Standard)</option>
+                <option value="center">Center</option>
+                <option value="bottom-left">Bottom-Left</option>
+                <option value="bottom-center">Bottom-Center</option>
+                <option value="top-right">Top-Right</option>
+                <option value="top-left">Top-Left</option>
+                <option value="top-center">Top-Center</option>
+                <option value="tiled">Full Tiled Pattern (Diagonal)</option>
+              </select>
+            </div>
+
+            <!-- Sliders Row: Font Size & Opacity -->
+            <div class="sliders-grid">
+              
+              <!-- Font Size -->
+              <div class="form-group">
+                <div class="slider-header">
+                  <label for="fontSizeSlider" class="form-label">Font Size</label>
+                  <span id="fontSizeDisplay" class="slider-val">36px</span>
+                </div>
+                <input 
+                  type="range" 
+                  id="fontSizeSlider" 
+                  min="14" 
+                  max="120" 
+                  value="36" 
+                  class="custom-slider"
+                >
+              </div>
+
+              <!-- Opacity -->
+              <div class="form-group">
+                <div class="slider-header">
+                  <label for="opacitySlider" class="form-label">Opacity</label>
+                  <span id="opacityDisplay" class="slider-val">45%</span>
+                </div>
+                <input 
+                  type="range" 
+                  id="opacitySlider" 
+                  min="5" 
+                  max="100" 
+                  value="45" 
+                  class="custom-slider"
+                >
+              </div>
+
+            </div>
+
+            <!-- Rotation & Color Row -->
+            <div class="options-row">
+              
+              <!-- Rotation Angle -->
+              <div class="form-group flex-1">
+                <div class="slider-header">
+                  <label for="rotationSlider" class="form-label">Rotation</label>
+                  <span id="rotationDisplay" class="slider-val">0&deg;</span>
+                </div>
+                <input 
+                  type="range" 
+                  id="rotationSlider" 
+                  min="-90" 
+                  max="90" 
+                  value="0" 
+                  class="custom-slider"
+                >
+              </div>
+
+              <!-- Text Color Picker -->
+              <div class="form-group color-group">
+                <label for="watermarkColor" class="form-label">Color</label>
+                <div class="color-picker-wrap">
+                  <input type="color" id="watermarkColor" value="#ffffff" title="Choose watermark color">
+                  <span id="colorHexText" class="color-hex-label">#FFFFFF</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Visual Enhancements Checkboxes -->
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label" for="enableShadow">
+                <input type="checkbox" id="enableShadow" checked>
+                <span>Add text shadow / contrast outline (improves visibility)</span>
+              </label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons-group">
+              <button type="button" id="btnApplyWatermark" class="btn btn-primary btn-block">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Apply Watermark
+              </button>
+
+              <button type="button" id="btnDownload" class="btn btn-success btn-block" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download Watermarked PNG
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </aside>
+
+      <!-- Right Column: Interactive Image Comparison Preview -->
+      <section class="preview-column">
+        
+        <div class="card preview-card">
+          <div class="preview-header">
+            <div>
+              <h3>Canvas Image Preview</h3>
+              <p class="card-subtitle">Real-time pixel rendering using HTML5 Canvas API</p>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="view-mode-tabs" role="tablist">
+              <button type="button" class="tab-btn active" id="tabWatermarked" role="tab" aria-selected="true">
+                Watermarked Output
+              </button>
+              <button type="button" class="tab-btn" id="tabOriginal" role="tab" aria-selected="false">
+                Original Image
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview Stage / Canvas Enclosure -->
+          <div class="canvas-stage" id="canvasStage">
+            
+            <!-- Empty State Placeholder (when no image is loaded) -->
+            <div id="canvasEmptyState" class="canvas-empty-state">
+              <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+              <h4>No Image Selected</h4>
+              <p>Upload a JPG/PNG image on the left, or click <strong>"Load Sample Image"</strong> to test immediately.</p>
+              <button type="button" id="btnEmptySampleTrigger" class="btn btn-secondary btn-sm" style="margin-top: 0.75rem;">
+                Load Sample Image
+              </button>
+            </div>
+
+            <!-- The Working Processing HTML5 Canvas -->
+            <canvas id="processingCanvas" class="processing-canvas" style="display: none;"></canvas>
+
+            <!-- Original Image Display (for comparison tab) -->
+            <img id="originalImgDisplay" class="original-img-display" alt="Original uploaded image" style="display: none;">
+          </div>
+
+          <!-- Canvas Footer Metadata -->
+          <div class="preview-footer">
+            <span id="canvasResolutionTag" class="meta-tag">Resolution: 0 &times; 0</span>
+            <span id="watermarkStatusTag" class="status-tag status-ready">Ready</span>
+          </div>
+        </div>
+
+        <!-- Session Activity History Card -->
+        <div class="card history-card">
+          <div class="history-card-header">
+            <div>
+              <h4>Session Activity History</h4>
+              <p class="card-subtitle">Local log of watermarking operations performed</p>
+            </div>
+            <button type="button" id="btnClearLog" class="btn-text-clear" title="Clear activity history">
+              Clear Log
+            </button>
+          </div>
+
+          <ul id="activityLogList" class="activity-log-list">
+            <!-- Dynamically populated activity items -->
+          </ul>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- College Project Information Footer -->
+    <footer class="project-info-footer">
+      <div class="footer-card">
+        <div class="footer-header">
+          <h4>🎓 Project Specifications &amp; Technical Architecture</h4>
+          <span class="badge-pill">College Mini-Project Showcase</span>
+        </div>
+
+        <div class="footer-content-grid">
+          <div class="footer-col">
+            <h5>1. HTML5 Canvas Pixel Modification</h5>
+            <p>
+              Unlike CSS overlays that merely display floating text, this system loads the image onto an offscreen <code>&lt;canvas&gt;</code>, calculates 2D matrix transformations (translation, rotation, alpha blending), and burns the watermark text directly into the raw pixel bitmap using <code>ctx.fillText()</code>.
+            </p>
+          </div>
+
+          <div class="footer-col">
+            <h5>2. Lossless PNG Export</h5>
+            <p>
+              Exporting uses <code>canvas.toDataURL('image/png')</code>, which serializes the modified canvas frame into a base64 Data URI. The client dynamically generates a simulated anchor download link for 100% offline file generation with zero external server dependencies.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature-tags-row">
+          <span class="tag">&check; 100% Client-Side Privacy</span>
+          <span class="tag">&check; HTML5 Canvas 2D API</span>
+          <span class="tag">&check; JPG, JPEG, PNG Supported</span>
+          <span class="tag">&check; Multi-Position &amp; Tiled Pattern</span>
+          <span class="tag">&check; Dynamic Opacity &amp; Font Sizing</span>
+          <span class="tag">&check; Lossless PNG Download</span>
+          <span class="tag">&check; Session History Log</span>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
